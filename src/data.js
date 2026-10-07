@@ -1,0 +1,7 @@
+export const products=[
+ {id:'demo-001',slug:'mashkalai-dal',nameBn:'মাসকালাই ডাল',nameEn:'Mashkalai Dal',category:'ডাল',unit:'কেজি',size:'1 kg',price:120,stock:50,featured:true,popular:true,new:true,image:'https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=900&q=80',description:'ডেমো পণ্য। প্রকাশের আগে প্রকৃত উৎস, মান, SKU ও মূল্য যাচাই করুন।'},
+ {id:'demo-002',slug:'deshi-mustard-oil',nameBn:'দেশি সরিষার তেল',nameEn:'Deshi Mustard Oil',category:'তেল ও মসলা',unit:'লিটার',size:'1 L',price:245,stock:42,featured:true,popular:true,new:false,image:'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=900&q=80',description:'ডেমো পণ্য। প্রকাশের আগে প্রকৃত উৎস, মান, SKU ও মূল্য যাচাই করুন।'}
+];
+export const categories=['সব','চাল','ডাল','তেল ও মসলা','নিত্যপ্রয়োজনীয়','পানীয়'];
+export const zones=[{id:'demo-dhaka',name:'ঢাকার ভেতর',charge:70,eta:'১–২ দিন'},{id:'demo-out',name:'ঢাকার বাইরে',charge:120,eta:'২–৪ দিন'},{id:'demo-other',name:'অন্যান্য জেলা',charge:140,eta:'৩–৫ দিন'}];
+export const faq=[['ডেলিভারি চার্জ কখন দিতে হবে?','অর্ডার নিশ্চিত হওয়ার আগে ডেলিভারি চার্জ পরিশোধ ও যাচাই করতে হবে।'],['COD কি আছে?','V1-এ Cash on Delivery রাখা হয়নি।'],['দাম কীভাবে নির্ধারণ করা হয়?','ক্রয়মূল্য, প্রয়োজনীয় পরিবহন/প্যাকেজিং/অন্যান্য বাস্তব খরচ এবং যুক্তিসঙ্গত margin বিবেচনা করা হয়।'],['অর্ডার ট্র্যাক করা যাবে?','Login করা customer নিজের order status দেখতে পারবেন।']];

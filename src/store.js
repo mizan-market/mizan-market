@@ -1,0 +1,16 @@
+import {products as seedProducts,zones as seedZones} from './data';
+const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}};
+const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+export const getProducts=()=>read('mizan_products',seedProducts);
+export const saveProducts=v=>write('mizan_products',v);
+export const getZones=()=>read('mizan_zones',seedZones);
+export const saveZones=v=>write('mizan_zones',v);
+export const getCart=()=>read('mizan_cart',[]);
+export const saveCart=v=>write('mizan_cart',v);
+export const getWishlist=()=>read('mizan_wishlist',[]);
+export const saveWishlist=v=>write('mizan_wishlist',v);
+export const getOrders=()=>read('mizan_orders',[]);
+export const saveOrders=v=>write('mizan_orders',v);
+export const addOrder=o=>{const a=getOrders();a.unshift(o);saveOrders(a);return o};
+export const money=n=>`৳${Number(n||0).toLocaleString('bn-BD',{maximumFractionDigits:2})}`;
+export const slugify=s=>String(s||'').toString().toLowerCase().trim().replace(/[^a-z0-9ঀ-৿]+/g,'-').replace(/^-|-$/g,'');

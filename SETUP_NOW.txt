@@ -1,0 +1,28 @@
+MIZAN MARKET — FINAL V1
+
+1) Extract this ZIP to a NEW folder. Do not delete your old project yet.
+2) Copy your existing correct .env.local into this new folder.
+3) Open CMD in the new folder.
+4) npm install
+5) npm run dev
+6) For checkout TEST PAYMENT only, use another CMD:
+   npm run server
+7) Supabase SQL Editor: run supabase/schema.sql once.
+8) Then run supabase/seed.sql if you want DEMO products.
+9) Website Register -> create your account.
+10) Supabase SQL Editor -> make that account admin:
+
+UPDATE public.profiles
+SET role='admin', updated_at=now()
+WHERE id=(SELECT id FROM auth.users WHERE email='YOUR-EMAIL@example.com');
+
+11) Logout/Login again -> /admin
+12) To test local payment only:
+   - .env.local: VITE_DEMO_MODE=true
+   - local server env: DEMO_PAYMENT_MODE=true
+   - SQL: UPDATE public.site_settings SET value='{"enabled":true}' WHERE key='demo_payment';
+
+IMPORTANT:
+- Never put a Supabase service_role key in the frontend.
+- Production payment is NOT fake. Real gateway integration is pending until bKash/Nagad/SSLCommerz/etc. is connected and server-side verified.
+- If you see Invalid API key, replace the publishable/anon key from Supabase Dashboard -> Connect/API credentials, then restart Vite.
