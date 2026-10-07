@@ -7,15 +7,27 @@ import { fileURLToPath } from 'url';
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '1mb' }));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+app.use(express.json({
+  limit: '1mb'
+}));
 
 const port = process.env.PORT || 8787;
 
 const url = process.env.SUPABASE_URL;
+
 const key =
   process.env.SUPABASE_PUBLISHABLE_KEY ||
   process.env.SUPABASE_ANON_KEY;
+
+
+/* =========================================
+   SUPABASE CLIENT
+========================================= */
 
 function clientFor(token = '') {
   if (!url || !key) {
@@ -25,20 +37,31 @@ function clientFor(token = '') {
   return createClient(url, key, {
     global: {
       headers: token
-        ? { Authorization: `Bearer ${token}` }
+        ? {
+            Authorization: `Bearer ${token}`
+          }
         : {}
     }
   });
 }
 
+
+/* =========================================
+   AUTH TOKEN
+========================================= */
+
 function authToken(req) {
   const h = req.headers.authorization || '';
-  return h.startsWith('Bearer ') ? h.slice(7) : '';
+
+  return h.startsWith('Bearer ')
+    ? h.slice(7)
+    : '';
 }
 
-/* =========================
-   API ROUTES
-========================= */
+
+/* =========================================
+   API HEALTH
+========================================= */
 
 app.get('/api/health', async (_req, res) => {
   res.json({
@@ -49,27 +72,46 @@ app.get('/api/health', async (_req, res) => {
   });
 });
 
+
+/* =========================================
+   CHECKOUT QUOTE
+========================================= */
+
 app.post('/api/checkout/quote', async (req, res) => {
   try {
     const sb = clientFor(authToken(req));
 
-    const { data, error } = await sb.rpc('quote_cart', {
+    const {
+      data,
+      error
+    } = await sb.rpc('quote_cart', {
       p_items: req.body.items || [],
       p_zone_id: req.body.zoneId
     });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     res.json(data);
+
   } catch (e) {
+
     res.status(400).json({
       error: e.message || 'quote_failed'
     });
+
   }
 });
 
+
+/* =========================================
+   CREATE PENDING ORDER
+========================================= */
+
 app.post('/api/orders/pending', async (req, res) => {
   try {
+
     const token = authToken(req);
 
     if (!token) {
@@ -80,27 +122,41 @@ app.post('/api/orders/pending', async (req, res) => {
 
     const sb = clientFor(token);
 
-    const { data, error } = await sb.rpc('create_pending_order', {
+    const {
+      data,
+      error
+    } = await sb.rpc('create_pending_order', {
       p_items: req.body.items || [],
       p_zone_id: req.body.zoneId,
       p_address: req.body.address || {}
     });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     res.json({
       ok: true,
       order: data
     });
+
   } catch (e) {
+
     res.status(400).json({
       error: e.message || 'order_failed'
     });
+
   }
 });
 
+
+/* =========================================
+   DEMO PAYMENT
+========================================= */
+
 app.post('/api/payments/demo', async (req, res) => {
   try {
+
     if (process.env.DEMO_PAYMENT_MODE !== 'true') {
       return res.status(403).json({
         error: 'demo_payment_disabled_on_server'
@@ -126,7 +182,9 @@ app.post('/api/payments/demo', async (req, res) => {
       p_address: req.body.address || {}
     });
 
-    if (pe) throw pe;
+    if (pe) {
+      throw pe;
+    }
 
     const {
       data: confirmed,
@@ -135,7 +193,9 @@ app.post('/api/payments/demo', async (req, res) => {
       p_order_id: pending.id
     });
 
-    if (ce) throw ce;
+    if (ce) {
+      throw ce;
+    }
 
     res.json({
       ok: true,
@@ -144,32 +204,60 @@ app.post('/api/payments/demo', async (req, res) => {
         ...confirmed
       }
     });
+
   } catch (e) {
+
     res.status(400).json({
       error: e.message || 'demo_payment_failed'
     });
+
   }
 });
 
-/* =========================
-   SERVE REACT FRONTEND
-========================= */
+
+/* =========================================
+   REACT FRONTEND
+========================================= */
 
 const __filename = fileURLToPath(import.meta.url);
+
 const __dirname = path.dirname(__filename);
 
-const distPath = path.join(__dirname, '..', 'dist');
+const distPath = path.join(
+  __dirname,
+  '..',
+  'dist'
+);
+
+
+/* Serve React static files */
 
 app.use(express.static(distPath));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
+
+/* React SPA fallback */
+
+app.use((req, res, next) => {
+
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  res.sendFile(
+    path.join(distPath, 'index.html')
+  );
+
 });
 
-/* =========================
+
+/* =========================================
    START SERVER
-========================= */
+========================================= */
 
 app.listen(port, () => {
-  console.log(`MIZAN MARKET API listening on ${port}`);
+
+  console.log(
+    `MIZAN MARKET API listening on ${port}`
+  );
+
 });
