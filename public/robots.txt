@@ -8,4 +8,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /api/
-Sitemap: /sitemap.xml
+Sitemap: https://mizan-market.onrender.com/sitemap.xml
