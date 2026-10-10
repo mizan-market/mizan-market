@@ -3,6 +3,7 @@ import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import 'dotenv/config';
 import path from 'path';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'url';
 
 const app = express();
@@ -265,6 +266,65 @@ app.get('/sitemap.xml', async (_req, res) => {
     .set('X-Content-Type-Options', 'nosniff')
     .set('Cache-Control', 'no-cache')
     .send(xml);
+});
+
+
+/* Route-specific metadata in the initial HTML response helps search crawlers
+   that inspect HTML before running the React application. */
+const publicSeoRoutes = {
+  '/': { title: 'MIZAN MARKET — ন্যায্য দামে, সবার জন্য।', description: 'মীযান মার্কেট থেকে বাংলাদেশের প্রয়োজনীয় পণ্য ন্যায্য দামে দেখুন ও অর্ডার করুন।' },
+  '/products': { title: 'সব পণ্য — MIZAN MARKET', description: 'মীযান মার্কেটের পণ্যসমূহ দেখুন, দাম তুলনা করুন এবং অনলাইনে অর্ডার করুন।' },
+  '/categories': { title: 'পণ্যের ক্যাটাগরি — MIZAN MARKET', description: 'মীযান মার্কেটের বিভিন্ন পণ্যের ক্যাটাগরি ব্রাউজ করুন।' },
+  '/about': { title: 'আমাদের সম্পর্কে — MIZAN MARKET', description: 'মীযান মার্কেটের লক্ষ্য, ন্যায্য মূল্য এবং স্বচ্ছ ব্যবসার নীতি সম্পর্কে জানুন।' },
+  '/principles': { title: 'আমাদের নীতি — MIZAN MARKET', description: 'সঠিক ওজন, সৎ পণ্যের বিবরণ এবং ন্যায্য লেনদেন নিয়ে মীযান মার্কেটের নীতি।' },
+  '/pricing': { title: 'দাম কীভাবে নির্ধারণ করি — MIZAN MARKET', description: 'মীযান মার্কেটে পণ্যের মূল্য নির্ধারণে প্রয়োজনীয় খরচ ও যুক্তিসঙ্গত মার্জিন সম্পর্কে জানুন।' },
+  '/delivery': { title: 'ডেলিভারি তথ্য — MIZAN MARKET', description: 'মীযান মার্কেটের ডেলিভারি তথ্য, চার্জ এবং অর্ডার সংক্রান্ত নির্দেশনা দেখুন।' },
+  '/faq': { title: 'সাধারণ প্রশ্নোত্তর — MIZAN MARKET', description: 'মীযান মার্কেটে অর্ডার, পেমেন্ট, পণ্য ও ডেলিভারি সম্পর্কে সাধারণ প্রশ্নের উত্তর।' },
+  '/contact': { title: 'যোগাযোগ — MIZAN MARKET', description: 'পণ্য বা অর্ডার বিষয়ে সাহায্যের জন্য মীযান মার্কেটের সঙ্গে যোগাযোগ করুন।' },
+  '/blog': { title: 'ব্লগ ও কেনাকাটার পরামর্শ — MIZAN MARKET', description: 'অনলাইন কেনাকাটা, পণ্যের বিবরণ ও ন্যায্য মূল্য নিয়ে মীযান মার্কেটের লেখা পড়ুন।' },
+  '/policies': { title: 'গোপনীয়তা ও শর্তাবলি — MIZAN MARKET', description: 'মীযান মার্কেটের গোপনীয়তা, ব্যবহারবিধি, রিটার্ন ও অর্ডার-সংক্রান্ত নীতি দেখুন।' }
+};
+const htmlEscape = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+app.use(async (req, res, next) => {
+  if (req.method !== 'GET' || req.path.startsWith('/api/') || req.path === '/sitemap.xml' || path.extname(req.path)) return next();
+  const route = req.path.replace(/\/$/, '') || '/';
+  let meta = publicSeoRoutes[route];
+  if (!meta && /^\/product\/[^/]+$/.test(route)) {
+    const slug = decodeURIComponent(route.slice('/product/'.length));
+    meta = { title: 'পণ্য — MIZAN MARKET', description: 'মীযান মার্কেটের পণ্যের বিবরণ, মূল্য ও অর্ডারের তথ্য দেখুন।' };
+    if (url && key) {
+      try {
+        const sb = clientFor();
+        const { data } = await sb.from('products').select('name_bn,short_description,description,available').eq('slug', slug).maybeSingle();
+        if (data && data.available !== false) {
+          meta = {
+            title: `${data.name_bn || 'পণ্য'} — MIZAN MARKET`,
+            description: String(data.short_description || data.description || 'মীযান মার্কেটের ন্যায্য দামের পণ্য দেখুন ও অর্ডার করুন।').slice(0, 300)
+          };
+        }
+      } catch (error) {
+        console.error('Product SEO metadata lookup failed:', error.message);
+      }
+    }
+  }
+  if (!meta) return next();
+  try {
+    const file = await readFile(path.join(distPath, 'index.html'), 'utf8');
+    const canonical = 'https://mizan-market.onrender.com' + route;
+    let html = file
+      .replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>' + htmlEscape(meta.title) + '</title>')
+      .replace(/<meta\\s+name="description"\\s+content="[^"]*"\\s*\\/>/i, '<meta name="description" content="' + htmlEscape(meta.description) + '" />')
+      .replace(/<meta\\s+property="og:title"\\s+content="[^"]*"\\s*\\/>/i, '<meta property="og:title" content="' + htmlEscape(meta.title) + '" />')
+      .replace(/<meta\\s+property="og:description"\\s+content="[^"]*"\\s*\\/>/i, '<meta property="og:description" content="' + htmlEscape(meta.description) + '" />')
+      .replace(/<meta\\s+name="twitter:title"\\s+content="[^"]*"\\s*\\/>/i, '<meta name="twitter:title" content="' + htmlEscape(meta.title) + '" />')
+      .replace(/<meta\\s+name="twitter:description"\\s+content="[^"]*"\\s*\\/>/i, '<meta name="twitter:description" content="' + htmlEscape(meta.description) + '" />')
+      .replace(/<link\\s+rel="canonical"[^>]*>\\s*/i, '');
+    html = html.replace('</head>', '<link rel="canonical" href="' + htmlEscape(canonical) + '" />\\n  </head>');
+    return res.status(200).type('html').send(html);
+  } catch (error) {
+    return next(error);
+  }
 });
 
 /* Serve React static files */
