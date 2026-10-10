@@ -20,5 +20,4 @@ grant insert, update, delete on public.faq to authenticated;
 
 -- These functions are invoked by triggers, not directly by API clients.
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
-revoke execute on function public.restore_stock_on_order_cancel() from public, anon, authenticated;
 notify pgrst, 'reload schema';
