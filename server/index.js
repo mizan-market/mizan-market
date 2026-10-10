@@ -320,7 +320,28 @@ app.use(async (req, res, next) => {
       .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/>/i, '<meta name="twitter:title" content="' + htmlEscape(meta.title) + '" />')
       .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/>/i, '<meta name="twitter:description" content="' + htmlEscape(meta.description) + '" />')
       .replace(/<link\s+rel="canonical"[^>]*>\s*/i, '');
-    html = html.replace('</head>', '<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
+    const pageSchema = {
+      '@context': 'https://schema.org',
+      '@type': route === '/' ? 'WebSite' : 'WebPage',
+      name: meta.title,
+      description: meta.description,
+      url: canonical,
+      inLanguage: 'bn-BD',
+      isPartOf: { '@type': 'WebSite', name: 'MIZAN MARKET', url: 'https://mizan-market.onrender.com/' }
+    };
+    const schemaTag = '<script type="application/ld+json">' + JSON.stringify(pageSchema).replace(/</g, '\\u003c') + '</script>';
+    const fallbackLinks = [
+      ['পণ্যসমূহ', '/products'],
+      ['ক্যাটাগরি', '/categories'],
+      ['আমাদের সম্পর্কে', '/about'],
+      ['দাম নির্ধারণের নীতি', '/pricing'],
+      ['ডেলিভারি', '/delivery'],
+      ['সাধারণ প্রশ্নোত্তর', '/faq'],
+      ['যোগাযোগ', '/contact']
+    ].map(([label, href]) => '<a href="' + href + '">' + label + '</a>').join(' · ');
+    const fallbackContent = '<noscript><main><h1>' + htmlEscape(meta.title) + '</h1><p>' + htmlEscape(meta.description) + '</p><nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p>MIZAN MARKET — ন্যায্য দামে, সবার জন্য।</p></main></noscript>';
+    html = html.replace('</head>', schemaTag + '\\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\\n  </head>');
+    html = html.replace('<div id="root"></div>', fallbackContent + '<div id="root"></div>');
     return res.status(200).type('html').send(html);
   } catch (error) {
     return next(error);
