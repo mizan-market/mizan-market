@@ -141,4 +141,6 @@ revoke all on function public.create_pending_order(jsonb, uuid, jsonb) from publ
 grant execute on function public.create_pending_order(jsonb, uuid, jsonb) to authenticated;
 revoke all on function public.cancel_my_order(uuid) from public;
 grant execute on function public.cancel_my_order(uuid) to authenticated;
+-- Demo payment is intentionally disabled; only COD is available until a real gateway is verified.
+drop function if exists public.confirm_demo_payment(uuid);
 notify pgrst, 'reload schema';
