@@ -340,7 +340,7 @@ app.use(async (req, res, next) => {
       ['যোগাযোগ', '/contact']
     ].map(([label, href]) => '<a href="' + href + '">' + label + '</a>').join(' · ');
     const fallbackContent = '<noscript><main><h1>' + htmlEscape(meta.title) + '</h1><p>' + htmlEscape(meta.description) + '</p><nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p>MIZAN MARKET — ন্যায্য দামে, সবার জন্য।</p></main></noscript>';
-    html = html.replace('</head>', schemaTag + '\\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\\n  </head>');
+    html = html.replace('</head>', schemaTag + '\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
     html = html.replace('<div id="root"></div>', fallbackContent + '<div id="root"></div>');
     return res.status(200).type('html').send(html);
   } catch (error) {
