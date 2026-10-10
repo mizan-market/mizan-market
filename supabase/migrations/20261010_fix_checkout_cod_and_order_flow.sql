@@ -121,6 +121,7 @@ $$;
 drop trigger if exists restore_stock_after_order_cancel on public.orders;
 create trigger restore_stock_after_order_cancel after update of order_status on public.orders
 for each row execute function public.restore_stock_on_order_cancel();
+revoke execute on function public.restore_stock_on_order_cancel() from public, anon, authenticated;
 
 create or replace function public.cancel_my_order(p_order_id uuid)
 returns jsonb language plpgsql security definer set search_path = public
