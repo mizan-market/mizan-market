@@ -207,6 +207,33 @@ const distPath = path.join(
 );
 
 
+/* Dynamic XML sitemap: public pages plus currently available products. */
+app.get('/sitemap.xml', async (_req, res) => {
+  const site = (process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://mizan-market.onrender.com').replace(/\/$/, '');
+  const pages = ['/', '/products', '/categories', '/about', '/principles', '/pricing', '/delivery', '/faq', '/contact', '/blog', '/policies'];
+  const urls = pages.map((route) => ({ loc: site + route }));
+  try {
+    if (url && key) {
+      const sb = clientFor();
+      const { data: products, error } = await sb.from('products').select('slug,updated_at,created_at').eq('available', true).not('slug', 'is', null).limit(5000);
+      if (!error && products) {
+        for (const product of products) {
+          if (!product.slug) continue;
+          urls.push({ loc: site + '/product/' + encodeURIComponent(product.slug), lastmod: product.updated_at || product.created_at || null });
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Sitemap product lookup failed:', error.message);
+  }
+  const xmlEscape = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    urls.map(({ loc, lastmod }) => '  <url><loc>' + xmlEscape(loc) + '</loc>' + (lastmod ? '<lastmod>' + xmlEscape(new Date(lastmod).toISOString().slice(0, 10)) + '</lastmod>' : '') + '</url>').join('\n') +
+    '\n</urlset>';
+  res.status(200).type('application/xml; charset=utf-8').set('Cache-Control', 'public, max-age=1800').send(xml);
+});
+
 /* Serve React static files */
 
 app.use(express.static(distPath));
