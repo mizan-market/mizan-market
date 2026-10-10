@@ -74,6 +74,48 @@ app.get('/api/health', async (_req, res) => {
 
 
 /* =========================================
+   CONTACT FORM
+========================================= */
+
+const contactAttempts = new Map();
+app.post('/api/contact', async (req, res) => {
+  const now = Date.now();
+  const forwarded = String(req.headers['x-forwarded-for'] || '');
+  const ip = (forwarded.split(',')[0] || req.socket.remoteAddress || 'unknown').trim();
+  const previous = contactAttempts.get(ip);
+  if (previous && now - previous.startedAt < 15 * 60 * 1000 && previous.count >= 3) {
+    return res.status(429).json({ error: 'contact_rate_limited' });
+  }
+  if (!previous || now - previous.startedAt >= 15 * 60 * 1000) {
+    contactAttempts.set(ip, { startedAt: now, count: 1 });
+  } else {
+    previous.count += 1;
+    contactAttempts.set(ip, previous);
+  }
+
+  const name = String(req.body?.name || '').trim();
+  const phone = String(req.body?.phone || '').trim();
+  const email = String(req.body?.email || '').trim();
+  const message = String(req.body?.message || '').trim();
+  if (name.length < 1 || name.length > 100 || phone.length < 5 || phone.length > 30 ||
+      message.length < 10 || message.length > 4000 || email.length > 254) {
+    return res.status(400).json({ error: 'invalid_contact_details' });
+  }
+  try {
+    const sb = clientFor();
+    const { error } = await sb.from('contact_messages').insert({
+      name, phone, email: email || null, message, status: 'new'
+    });
+    if (error) throw error;
+    return res.status(201).json({ ok: true });
+  } catch (e) {
+    console.error('Contact message save failed:', e.message);
+    return res.status(500).json({ error: 'contact_message_save_failed' });
+  }
+});
+
+
+/* =========================================
    CHECKOUT QUOTE
 ========================================= */
 
