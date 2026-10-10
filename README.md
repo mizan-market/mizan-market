@@ -152,39 +152,9 @@ Terminal 2:
 npm run server
 ```
 
-## 7. Local TEST PAYMENT
+## 7. Payment methods
 
-Production-এ fake payment নেই। Local testing-এর জন্য দুই জায়গায় explicit enable করতে হবে:
-
-`.env.local`:
-
-```env
-VITE_DEMO_MODE=true
-DEMO_PAYMENT_MODE=true
-```
-
-Supabase SQL:
-
-```sql
-UPDATE public.site_settings
-SET value='{"enabled":true}'
-WHERE key='demo_payment';
-```
-
-TEST PAYMENT শুধু local development-এর জন্য। Production-এ দুটোই OFF রাখুন:
-
-```env
-VITE_DEMO_MODE=false
-DEMO_PAYMENT_MODE=false
-```
-
-এবং DB:
-
-```sql
-UPDATE public.site_settings
-SET value='{"enabled":false}'
-WHERE key='demo_payment';
-```
+বর্তমান live storefront-এ **Cash on Delivery (COD)** চালু। গ্রাহক পণ্য হাতে পেয়ে ডেলিভারির সময় টাকা দেবেন। Demo/test payment endpoint সরানো হয়েছে, যাতে বাস্তব টাকা না নিয়েও পেমেন্ট সফল দেখানোর ঝুঁকি না থাকে।
 
 ## 8. Real payment gateway এখনও pending
 
@@ -243,18 +213,15 @@ Supabase Storage-এ `product-images` bucket schema migration তৈরি ক�
 Customer:
 
 1. Register/Login
-2. Product browse
-3. Add to cart
-4. Checkout
-5. Address
-6. Delivery zone
-7. DB/server quote
-8. Delivery-charge payment
-9. Verified payment → Confirmed
-10. Admin processes
-11. Customer tracks status
-
-COD V1-এ নেই।
+2. Product browse ও cart-এ যোগ
+3. Checkout-এ নাম, ফোন ও ডেলিভারি ঠিকানা দেওয়া
+4. Delivery zone নির্বাচন
+5. Server-side price/stock/charge পুনরায় যাচাই
+6. COD order তৈরি; stock transactionally reserve হয়
+7. Customer order number দিয়ে status track করতে পারেন
+8. Admin order confirm করে processing/shipped/delivered status update করেন
+9. COD payment পণ্য পৌঁছানোর সময় সংগ্রহ করা হয়
+10. Eligible pending/confirmed order cancel করলে reserved stock ফেরত যোগ হয়
 
 ## 13. Security rules
 
