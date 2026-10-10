@@ -65,7 +65,7 @@ function Checkout(){
     }catch(err){setMsg(getSupabaseError(err))}finally{setBusy(false)}
   };
   return <section className="section narrow"><span className="eyebrow">CHECKOUT</span><h1>ডেলিভারি তথ্য ও পেমেন্ট</h1>
-    <Notice>পেমেন্ট পদ্ধতি: **Cash on Delivery (COD)** — পণ্য হাতে পেয়ে ডেলিভারি কর্মীকে টাকা দিন। অর্ডারটি অ্যাডমিন নিশ্চিত করার পর প্রস্তুত করা হবে।</Notice>
+    <Notice>পেমেন্ট পদ্ধতি: <strong>Cash on Delivery (COD)</strong> — পণ্য হাতে পেয়ে ডেলিভারি কর্মীকে টাকা দিন। অর্ডারটি অ্যাডমিন নিশ্চিত করার পর প্রস্তুত করা হবে।</Notice>
     {msg&&<Notice>{msg}</Notice>}
     <form onSubmit={submit} className="checkout"><div><h3>ডেলিভারি ঠিকানা</h3>
       {Object.entries(form).map(([k,v])=><label key={k}>{({name:'নাম',phone:'ফোন',division:'বিভাগ',district:'জেলা',upazila:'উপজেলা/থানা',area:'এলাকা',address:'বিস্তারিত ঠিকানা',postal:'পোস্ট কোড'})[k]}<input required={['name','phone','district','address'].includes(k)} value={v} onChange={e=>setForm({...form,[k]:e.target.value})}/></label>)}
