@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Replace https://mizanmarket.pages.dev with the real public site URL before production deployment. -->
+<!-- Canonical public URL: https://mizan-market.onrender.com -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://mizanmarket.pages.dev/</loc></url>
-<url><loc>https://mizanmarket.pages.dev/products</loc></url>
-<url><loc>https://mizanmarket.pages.dev/categories</loc></url>
-<url><loc>https://mizanmarket.pages.dev/about</loc></url>
-<url><loc>https://mizanmarket.pages.dev/principles</loc></url>
-<url><loc>https://mizanmarket.pages.dev/pricing</loc></url>
-<url><loc>https://mizanmarket.pages.dev/delivery</loc></url>
-<url><loc>https://mizanmarket.pages.dev/faq</loc></url>
-<url><loc>https://mizanmarket.pages.dev/contact</loc></url>
-<url><loc>https://mizanmarket.pages.dev/blog</loc></url>
+<url><loc>https://mizan-market.onrender.com/</loc></url>
+<url><loc>https://mizan-market.onrender.com/products</loc></url>
+<url><loc>https://mizan-market.onrender.com/categories</loc></url>
+<url><loc>https://mizan-market.onrender.com/about</loc></url>
+<url><loc>https://mizan-market.onrender.com/principles</loc></url>
+<url><loc>https://mizan-market.onrender.com/pricing</loc></url>
+<url><loc>https://mizan-market.onrender.com/delivery</loc></url>
+<url><loc>https://mizan-market.onrender.com/faq</loc></url>
+<url><loc>https://mizan-market.onrender.com/contact</loc></url>
+<url><loc>https://mizan-market.onrender.com/blog</loc></url>
 </urlset>
