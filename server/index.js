@@ -209,7 +209,7 @@ const distPath = path.join(
 
 /* Dynamic XML sitemap: public pages plus currently available products. */
 app.get('/sitemap.xml', async (_req, res) => {
-  const site = (process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://mizan-market.onrender.com').replace(/\\/$/, '');
+  const site = (process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://mizan-market.onrender.com').replace(/\/$/, '');
   const pages = ['/', '/products', '/categories', '/about', '/principles', '/pricing', '/delivery', '/faq', '/contact', '/blog', '/policies'];
   const urls = pages.map((route) => ({ loc: site + route }));
 
@@ -251,14 +251,14 @@ app.get('/sitemap.xml', async (_req, res) => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-  const xml = '<?xml version="1.0" encoding="UTF-8"?>\\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n' +
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map(({ loc, lastmod }) =>
       '  <url><loc>' + xmlEscape(loc) + '</loc>' +
       (lastmod ? '<lastmod>' + xmlEscape(lastmod) + '</lastmod>' : '') +
       '</url>'
-    ).join('\\n') +
-    '\\n</urlset>\\n';
+    ).join('\n') +
+    '\n</urlset>\n';
 
   res.status(200)
     .set('Content-Type', 'application/xml; charset=utf-8')
