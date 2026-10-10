@@ -1,4 +1,4 @@
-const API=(import.meta.env.VITE_API_URL||'http://localhost:8787').replace(/\/$/,'');
+const API=(import.meta.env.VITE_API_URL||(import.meta.env.DEV?'http://localhost:8787':location.origin)).replace(/\/$/,'');
 
 async function request(path, options={}) {
   const r=await fetch(`${API}${path}`,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
@@ -10,6 +10,7 @@ export const apiHealth=()=>request('/api/health');
 export const calculateOrder=(payload)=>request('/api/checkout/quote',{method:'POST',body:JSON.stringify(payload)});
 export const createDemoPayment=(payload)=>request('/api/payments/demo',{method:'POST',headers:{Authorization:`Bearer ${payload.accessToken}`},body:JSON.stringify(payload)});
 export const createPendingOrder=(payload)=>request('/api/orders/pending',{method:'POST',headers:{Authorization:`Bearer ${payload.accessToken}`},body:JSON.stringify(payload)});
+export const sendContactMessage=(payload)=>request('/api/contact',{method:'POST',body:JSON.stringify(payload)});
 export const setSEO=({title,description,path='',noindex=false,image=''})=>{
   const site=import.meta.env.VITE_SITE_URL||location.origin;
   const full=`${site}${path}`;
