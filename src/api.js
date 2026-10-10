@@ -8,7 +8,8 @@ async function request(path, options={}) {
 }
 export const apiHealth=()=>request('/api/health');
 export const calculateOrder=(payload)=>request('/api/checkout/quote',{method:'POST',body:JSON.stringify(payload)});
-export const createDemoPayment=(payload)=>request('/api/payments/demo',{method:'POST',body:JSON.stringify(payload)});
+export const createDemoPayment=(payload)=>request('/api/payments/demo',{method:'POST',headers:{Authorization:`Bearer ${payload.accessToken}`},body:JSON.stringify(payload)});
+export const createPendingOrder=(payload)=>request('/api/orders/pending',{method:'POST',headers:{Authorization:`Bearer ${payload.accessToken}`},body:JSON.stringify(payload)});
 export const setSEO=({title,description,path='',noindex=false,image=''})=>{
   const site=import.meta.env.VITE_SITE_URL||location.origin;
   const full=`${site}${path}`;
