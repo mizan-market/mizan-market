@@ -243,7 +243,7 @@ Included:
 - manifest
 - semantic headings
 
-Before production, `public/sitemap.xml`-এর `https://mizanmarket.pages.dev`-এর জায়গায় actual domain দিন এবং product/category/blog URLs যোগ করুন।
+Custom domain যুক্ত করলে `public/sitemap.xml` ও `public/robots.txt`-এ `https://mizan-market.onrender.com`-এর জায়গায় নতুন canonical domain বসান। SEO-এর জন্য live product/category/blog URLs-ও sitemap-এ যোগ করুন.
 
 Google Search Console verification/Analytics values `site_settings` বা environment/configuration অনুযায়ী যোগ করা যাবে। কোনো tracking ID না থাকলে কিছুই load করার দরকার নেই।
 
