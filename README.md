@@ -78,15 +78,18 @@ If your Supabase project uses the older `anon` key, `VITE_SUPABASE_ANON_KEY` is 
 
 ## 4. Supabase database
 
-Supabase SQL Editor-এ existing database হলে আগে এই migration চালান:
+Supabase SQL Editor-এ **নতুন বা existing—দুই ধরনের database-এর জন্যই** নিচের ধাপগুলো অনুসরণ করুন।
+
+1. নতুন database হলে আগে `supabase/schema.sql` চালান। Existing database হলে এই ধাপ বাদ দিন।
+2. এরপর নিচের migration-গুলো **এই ক্রমে** চালান:
 
 ```text
 supabase/migrations/20261007_product_delivery_and_permissions.sql
+supabase/migrations/20261010_add_contact_messages.sql
+supabase/migrations/20261010_fix_checkout_cod_and_order_flow.sql
 ```
 
-এই migration পুরোনো `products` table-এ missing `brand`, `discount_price`, `seo_keywords` ও `delivery_charge` যোগ করে, explicit table privileges/RLS policies ঠিক করে এবং PostgREST schema cache reload করে।
-
-নতুন database হলে `supabase/schema.sql` চালালেই পূর্ণ schema তৈরি হবে। Existing database-এ `schema.sql`-এর পাশাপাশি উপরের migration-টি ব্যবহার করুন।
+এই migration-গুলো product fields/permissions, customer contact inbox, live ও fresh schema compatibility, Cash on Delivery checkout, stock reservation এবং eligible order cancellation সেটআপ করে। Existing product/order data মুছে ফেলার জন্য এগুলো তৈরি করা হয়নি।
 
 তারপর demo data চাইলে:
 
