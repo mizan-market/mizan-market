@@ -334,9 +334,12 @@ app.use(async (req, res, next) => {
       ['পণ্যসমূহ', '/products'],
       ['ক্যাটাগরি', '/categories'],
       ['আমাদের সম্পর্কে', '/about'],
+      ['আমাদের নীতি', '/principles'],
       ['দাম নির্ধারণের নীতি', '/pricing'],
       ['ডেলিভারি', '/delivery'],
       ['সাধারণ প্রশ্নোত্তর', '/faq'],
+      ['ব্লগ ও পরামর্শ', '/blog'],
+      ['গোপনীয়তা ও শর্তাবলি', '/policies'],
       ['যোগাযোগ', '/contact']
     ].map(([label, href]) => '<a href="' + href + '">' + label + '</a>').join(' · ');
     const routeCopy = {
