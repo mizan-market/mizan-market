@@ -86,6 +86,7 @@ Supabase SQL Editor-এ **নতুন বা existing—দুই ধরনে�
 ```text
 supabase/migrations/20261007_product_delivery_and_permissions.sql
 supabase/migrations/20261010_add_contact_messages.sql
+supabase/migrations/20261010_fix_address_faq_rls_and_trigger_grants.sql
 supabase/migrations/20261010_fix_checkout_cod_and_order_flow.sql
 ```
 
