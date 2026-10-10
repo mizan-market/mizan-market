@@ -313,14 +313,14 @@ app.use(async (req, res, next) => {
     const file = await readFile(path.join(distPath, 'index.html'), 'utf8');
     const canonical = 'https://mizan-market.onrender.com' + route;
     let html = file
-      .replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>' + htmlEscape(meta.title) + '</title>')
-      .replace(/<meta\\s+name="description"\\s+content="[^"]*"\\s*\\/>/i, '<meta name="description" content="' + htmlEscape(meta.description) + '" />')
-      .replace(/<meta\\s+property="og:title"\\s+content="[^"]*"\\s*\\/>/i, '<meta property="og:title" content="' + htmlEscape(meta.title) + '" />')
-      .replace(/<meta\\s+property="og:description"\\s+content="[^"]*"\\s*\\/>/i, '<meta property="og:description" content="' + htmlEscape(meta.description) + '" />')
-      .replace(/<meta\\s+name="twitter:title"\\s+content="[^"]*"\\s*\\/>/i, '<meta name="twitter:title" content="' + htmlEscape(meta.title) + '" />')
-      .replace(/<meta\\s+name="twitter:description"\\s+content="[^"]*"\\s*\\/>/i, '<meta name="twitter:description" content="' + htmlEscape(meta.description) + '" />')
-      .replace(/<link\\s+rel="canonical"[^>]*>\\s*/i, '');
-    html = html.replace('</head>', '<link rel="canonical" href="' + htmlEscape(canonical) + '" />\\n  </head>');
+      .replace(/<title>[\s\S]*?<\/title>/i, '<title>' + htmlEscape(meta.title) + '</title>')
+      .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/>/i, '<meta name="description" content="' + htmlEscape(meta.description) + '" />')
+      .replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/>/i, '<meta property="og:title" content="' + htmlEscape(meta.title) + '" />')
+      .replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/>/i, '<meta property="og:description" content="' + htmlEscape(meta.description) + '" />')
+      .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/>/i, '<meta name="twitter:title" content="' + htmlEscape(meta.title) + '" />')
+      .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/>/i, '<meta name="twitter:description" content="' + htmlEscape(meta.description) + '" />')
+      .replace(/<link\s+rel="canonical"[^>]*>\s*/i, '');
+    html = html.replace('</head>', '<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
     return res.status(200).type('html').send(html);
   } catch (error) {
     return next(error);
