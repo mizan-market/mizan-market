@@ -153,9 +153,10 @@ revoke all on function public.confirm_demo_payment(uuid) from public; grant exec
 
 -- Product image bucket. If Storage permissions differ in your Supabase project, review these policies in Storage.
 insert into storage.buckets(id,name,public) values('product-images','product-images',true) on conflict(id) do update set public=true;
-drop policy if exists product_images_public on storage.objects; drop policy if exists product_images_admin_insert on storage.objects; drop policy if exists product_images_admin_delete on storage.objects;
-create policy product_images_public on storage.objects for select using(bucket_id='product-images');
+drop policy if exists product_images_public on storage.objects; drop policy if exists product_images_admin_insert on storage.objects; drop policy if exists product_images_admin_update on storage.objects; drop policy if exists product_images_admin_delete on storage.objects;
+create policy product_images_public on storage.objects for select to anon,authenticated using(bucket_id='product-images');
 create policy product_images_admin_insert on storage.objects for insert to authenticated with check(bucket_id='product-images' and public.is_admin());
+create policy product_images_admin_update on storage.objects for update to authenticated using(bucket_id='product-images' and public.is_admin()) with check(bucket_id='product-images' and public.is_admin());
 create policy product_images_admin_delete on storage.objects for delete to authenticated using(bucket_id='product-images' and public.is_admin());
 
 -- Default demo/test setting is OFF. For local-only testing, admin can set it true temporarily:
