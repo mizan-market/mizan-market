@@ -383,8 +383,19 @@ app.use(async (req, res, next) => {
       '/blog': ['অনলাইন কেনাকাটা ও ন্যায্য মূল্য নিয়ে পরামর্শ', 'কেনাকাটার আগে পণ্যের বিবরণ, একক, মোট মূল্য, ডেলিভারি চার্জ এবং প্রযোজ্য নীতিমালা দেখে নেওয়া ভালো। পণ্য সম্পর্কে সন্দেহ থাকলে অর্ডারের আগে যোগাযোগ করুন।'],
       '/policies': ['গোপনীয়তা, ব্যবহারবিধি ও অর্ডার নীতি', 'অর্ডার দেওয়ার আগে পণ্যের মূল্য, স্টক, ডেলিভারি তথ্য এবং প্রযোজ্য বাতিল বা ফেরত নীতি পড়ে নিন। ব্যক্তিগত তথ্য কেবল অর্ডার ও গ্রাহকসেবার প্রয়োজন অনুযায়ী ব্যবহার করা উচিত।']
     };
-    const copy = routeCopy[route] || ['পণ্যের তথ্য ও অর্ডার', meta.description];
-    const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p><nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
+    const copy = productForSeo
+      ? [
+          productForSeo.name_bn || 'পণ্যের বিবরণ',
+          productForSeo.description || productForSeo.short_description || meta.description
+        ]
+      : (routeCopy[route] || ['পণ্যের তথ্য ও অর্ডার', meta.description]);
+    const productDetails = productForSeo
+      ? '<p><strong>বর্তমান মূল্য: ৳' + htmlEscape(Number(productForSeo.discount_price ?? productForSeo.selling_price).toLocaleString('en-US')) + '</strong> · ' +
+        htmlEscape(Number(productForSeo.stock_quantity || 0) > 0 ? 'স্টকে আছে' : 'স্টক শেষ') + '</p><p>পণ্যের নাম: ' +
+        htmlEscape(productForSeo.name_bn || '') + (productForSeo.name_en ? ' (' + htmlEscape(productForSeo.name_en) + ')' : '') +
+        (productForSeo.size || productForSeo.unit ? ' · পরিমাণ: ' + htmlEscape(productForSeo.size || productForSeo.unit) : '') + '</p>'
+      : '';
+    const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p>' + productDetails + '<nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
     html = html.replace('</head>', schemaTag + '\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
     html = html.replace('<div id="root"></div>', '<div id="root">' + fallbackContent + '</div>');
     return res.status(200).type('html').send(html);
