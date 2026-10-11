@@ -432,7 +432,7 @@ app.use(async (req, res, next) => {
       ? '<section aria-label="পণ্যের তালিকা"><h2>জনপ্রিয় ও উপলভ্য পণ্য</h2><ul>' + productsForSeo.map((product) => {
           const name = product.name_bn || product.name_en || 'পণ্য';
           const price = Number(product.discount_price ?? product.selling_price);
-          const description = String(product.short_description || '').replace(/\\s+/g, ' ').trim().slice(0, 180);
+          const description = String(product.short_description || '').replace(/\s+/g, ' ').trim().slice(0, 180);
           return '<li><a href="/product/' + encodeURIComponent(product.slug) + '">' + htmlEscape(name) + '</a>' +
             (product.size || product.unit ? ' — পরিমাণ: ' + htmlEscape(product.size || product.unit) : '') +
             (Number.isFinite(price) ? ' — মূল্য: ৳' + htmlEscape(price.toLocaleString('en-US')) : '') +
