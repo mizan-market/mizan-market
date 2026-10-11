@@ -8,4 +8,8 @@ Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /api/
+
+User-agent: GSCWizard-Bot
+Allow: /
+
 Sitemap: https://mizan-market.onrender.com/sitemap.xml
