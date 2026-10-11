@@ -293,6 +293,7 @@ app.use(async (req, res, next) => {
   const route = req.path.replace(/\/$/, '') || '/';
   let meta = publicSeoRoutes[route];
   let productForSeo = null;
+  let productsForSeo = [];
   if (!meta && /^\/product\/[^/]+$/.test(route)) {
     const slug = decodeURIComponent(route.slice('/product/'.length));
     meta = { title: 'পণ্য — MIZAN MARKET', description: 'মীযান মার্কেটের পণ্যের বিবরণ, মূল্য ও অর্ডারের তথ্য দেখুন।' };
@@ -332,6 +333,21 @@ app.use(async (req, res, next) => {
       } catch (error) {
         console.error('Product SEO metadata lookup failed:', error.message);
       }
+    }
+  }
+  if (url && key && ['/', '/products', '/categories'].includes(route)) {
+    try {
+      const sb = clientFor();
+      const { data: products, error } = await sb
+        .from('products')
+        .select('slug,name_bn,name_en,selling_price,discount_price,short_description,stock_quantity,unit,size,available')
+        .eq('available', true)
+        .not('slug', 'is', null)
+        .limit(24);
+      if (error) throw error;
+      productsForSeo = products || [];
+    } catch (error) {
+      console.error('Listing SEO product lookup failed:', error.message);
     }
   }
   if (!meta) return next();
@@ -412,7 +428,20 @@ app.use(async (req, res, next) => {
         htmlEscape(productForSeo.name_bn || '') + (productForSeo.name_en ? ' (' + htmlEscape(productForSeo.name_en) + ')' : '') +
         (productForSeo.size || productForSeo.unit ? ' · পরিমাণ: ' + htmlEscape(productForSeo.size || productForSeo.unit) : '') + '</p>'
       : '';
-    const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p>' + productDetails + '<nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
+    const productList = productsForSeo.length
+      ? '<section aria-label="পণ্যের তালিকা"><h2>জনপ্রিয় ও উপলভ্য পণ্য</h2><ul>' + productsForSeo.map((product) => {
+          const name = product.name_bn || product.name_en || 'পণ্য';
+          const price = Number(product.discount_price ?? product.selling_price);
+          const description = String(product.short_description || '').replace(/\\s+/g, ' ').trim().slice(0, 180);
+          return '<li><a href="/product/' + encodeURIComponent(product.slug) + '">' + htmlEscape(name) + '</a>' +
+            (product.size || product.unit ? ' — পরিমাণ: ' + htmlEscape(product.size || product.unit) : '') +
+            (Number.isFinite(price) ? ' — মূল্য: ৳' + htmlEscape(price.toLocaleString('en-US')) : '') +
+            (description ? '<p>' + htmlEscape(description) + '</p>' : '') +
+            (Number(product.stock_quantity || 0) > 0 ? '<span>স্টকে আছে</span>' : '<span>স্টক যাচাই করুন</span>') +
+            '</li>';
+        }).join('') + '</ul></section>'
+      : '';
+    const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p>' + productDetails + productList + '<nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
     html = html.replace('</head>', schemaTag + '\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
     html = html.replace('<div id="root"></div>', '<div id="root">' + fallbackContent + '</div>');
     return res.status(200).type('html').send(html);
