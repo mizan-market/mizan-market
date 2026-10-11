@@ -310,17 +310,12 @@ app.use(async (req, res, next) => {
           try {
             const { data: images } = await sb
               .from('product_images')
-              .select('image_url,storage_path')
+              .select('image_url')
               .eq('product_id', data.id)
               .order('sort_order', { ascending: true })
               .limit(1);
             const firstImage = images?.[0];
-            productForSeo.image = firstImage?.image_url ||
-              (firstImage?.storage_path?.startsWith('http')
-                ? firstImage.storage_path
-                : (firstImage?.storage_path
-                  ? sb.storage.from('product-images').getPublicUrl(firstImage.storage_path).data.publicUrl
-                  : ''));
+            productForSeo.image = firstImage?.image_url || '';
           } catch (imageError) {
             console.error('Product SEO image lookup failed:', imageError.message);
           }
