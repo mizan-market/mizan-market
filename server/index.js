@@ -290,18 +290,27 @@ app.use(async (req, res, next) => {
   if (req.method !== 'GET' || req.path.startsWith('/api/') || req.path === '/sitemap.xml' || path.extname(req.path)) return next();
   const route = req.path.replace(/\/$/, '') || '/';
   let meta = publicSeoRoutes[route];
-  if (!meta && /^\/product\/[^/]+$/.test(route)) {
+  let productForSeo = null;
+  if (!meta && /^\\/product\\/[^/]+$/.test(route)) {
     const slug = decodeURIComponent(route.slice('/product/'.length));
     meta = { title: 'পণ্য — MIZAN MARKET', description: 'মীযান মার্কেটের পণ্যের বিবরণ, মূল্য ও অর্ডারের তথ্য দেখুন।' };
     if (url && key) {
       try {
         const sb = clientFor();
-        const { data } = await sb.from('products').select('name_bn,short_description,description,available').eq('slug', slug).maybeSingle();
+        const { data, error } = await sb
+          .from('products')
+          .select('name_bn,name_en,sku,short_description,description,available,selling_price,discount_price,stock_quantity,unit,size')
+          .eq('slug', slug)
+          .maybeSingle();
+        if (error) throw error;
         if (data && data.available !== false) {
+          productForSeo = data;
           meta = {
             title: `${data.name_bn || 'পণ্য'} — MIZAN MARKET`,
             description: String(data.short_description || data.description || 'মীযান মার্কেটের ন্যায্য দামের পণ্য দেখুন ও অর্ডার করুন।').slice(0, 300)
           };
+        } else {
+          return res.status(404).type('html').send('পণ্যটি পাওয়া যায়নি — MIZAN MARKET');
         }
       } catch (error) {
         console.error('Product SEO metadata lookup failed:', error.message);
@@ -320,7 +329,24 @@ app.use(async (req, res, next) => {
       .replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/>/i, '<meta name="twitter:title" content="' + htmlEscape(meta.title) + '" />')
       .replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/>/i, '<meta name="twitter:description" content="' + htmlEscape(meta.description) + '" />')
       .replace(/<link\s+rel="canonical"[^>]*>\s*/i, '');
-    const pageSchema = {
+    const pageSchema = productForSeo ? {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: productForSeo.name_bn || meta.title,
+      description: meta.description,
+      sku: productForSeo.sku || undefined,
+      url: canonical,
+      inLanguage: 'bn-BD',
+      offers: {
+        '@type': 'Offer',
+        url: canonical,
+        priceCurrency: 'BDT',
+        price: Number(productForSeo.discount_price ?? productForSeo.selling_price),
+        availability: Number(productForSeo.stock_quantity || 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition'
+      },
+      isPartOf: { '@type': 'WebSite', name: 'MIZAN MARKET', url: 'https://mizan-market.onrender.com/' }
+    } : {
       '@context': 'https://schema.org',
       '@type': route === '/' ? 'WebSite' : 'WebPage',
       name: meta.title,
