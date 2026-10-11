@@ -325,7 +325,7 @@ app.use(async (req, res, next) => {
             console.error('Product SEO image lookup failed:', imageError.message);
           }
           const shortDescription = String(data.short_description || '').trim();
-          const fullDescription = String(data.description || data.short_description || 'মীযান মার্কেটের ন্যায্য দামের পণ্য দেখুন ও অর্ডার করুন.').replace(/\\s+/g, ' ').trim();
+          const fullDescription = String(data.description || data.short_description || 'মীযান মার্কেটের ন্যায্য দামের পণ্য দেখুন ও অর্ডার করুন।').replace(/\s+/g, ' ').trim();
           const seoDescription = shortDescription.length >= 90 ? shortDescription : fullDescription;
           meta = {
             title: `${data.name_bn || 'পণ্য'} — MIZAN MARKET`,
