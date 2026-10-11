@@ -291,7 +291,7 @@ app.use(async (req, res, next) => {
   const route = req.path.replace(/\/$/, '') || '/';
   let meta = publicSeoRoutes[route];
   let productForSeo = null;
-  if (!meta && /^\\/product\\/[^/]+$/.test(route)) {
+  if (!meta && /^\/product\/[^/]+$/.test(route)) {
     const slug = decodeURIComponent(route.slice('/product/'.length));
     meta = { title: 'পণ্য — MIZAN MARKET', description: 'মীযান মার্কেটের পণ্যের বিবরণ, মূল্য ও অর্ডারের তথ্য দেখুন।' };
     if (url && key) {
