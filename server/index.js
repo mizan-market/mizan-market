@@ -301,15 +301,35 @@ app.use(async (req, res, next) => {
         const sb = clientFor();
         const { data, error } = await sb
           .from('products')
-          .select('name_bn,name_en,sku,short_description,description,available,selling_price,discount_price,stock_quantity,unit,size')
+          .select('id,name_bn,name_en,sku,short_description,description,available,selling_price,discount_price,stock_quantity,unit,size')
           .eq('slug', slug)
           .maybeSingle();
         if (error) throw error;
         if (data && data.available !== false) {
           productForSeo = data;
+          try {
+            const { data: images } = await sb
+              .from('product_images')
+              .select('image_url,storage_path')
+              .eq('product_id', data.id)
+              .order('sort_order', { ascending: true })
+              .limit(1);
+            const firstImage = images?.[0];
+            productForSeo.image = firstImage?.image_url ||
+              (firstImage?.storage_path?.startsWith('http')
+                ? firstImage.storage_path
+                : (firstImage?.storage_path
+                  ? sb.storage.from('product-images').getPublicUrl(firstImage.storage_path).data.publicUrl
+                  : ''));
+          } catch (imageError) {
+            console.error('Product SEO image lookup failed:', imageError.message);
+          }
+          const shortDescription = String(data.short_description || '').trim();
+          const fullDescription = String(data.description || data.short_description || 'মীযান মার্কেটের ন্যায্য দামের পণ্য দেখুন ও অর্ডার করুন.').replace(/\\s+/g, ' ').trim();
+          const seoDescription = shortDescription.length >= 90 ? shortDescription : fullDescription;
           meta = {
             title: `${data.name_bn || 'পণ্য'} — MIZAN MARKET`,
-            description: String(data.short_description || data.description || 'মীযান মার্কেটের ন্যায্য দামের পণ্য দেখুন ও অর্ডার করুন।').slice(0, 300)
+            description: seoDescription.slice(0, 160)
           };
         } else {
           return res.status(404).type('html').send('পণ্যটি পাওয়া যায়নি — MIZAN MARKET');
@@ -337,6 +357,7 @@ app.use(async (req, res, next) => {
       name: productForSeo.name_bn || meta.title,
       description: meta.description,
       sku: productForSeo.sku || undefined,
+      image: productForSeo.image ? [productForSeo.image] : undefined,
       url: canonical,
       inLanguage: 'bn-BD',
       offers: {
@@ -390,7 +411,8 @@ app.use(async (req, res, next) => {
         ]
       : (routeCopy[route] || ['পণ্যের তথ্য ও অর্ডার', meta.description]);
     const productDetails = productForSeo
-      ? '<p><strong>বর্তমান মূল্য: ৳' + htmlEscape(Number(productForSeo.discount_price ?? productForSeo.selling_price).toLocaleString('en-US')) + '</strong> · ' +
+      ? (productForSeo.image ? '<img src="' + htmlEscape(productForSeo.image) + '" alt="' + htmlEscape(productForSeo.name_bn || 'MIZAN MARKET পণ্য') + '" loading="eager" />' : '') +
+        '<p><strong>বর্তমান মূল্য: ৳' + htmlEscape(Number(productForSeo.discount_price ?? productForSeo.selling_price).toLocaleString('en-US')) + '</strong> · ' +
         htmlEscape(Number(productForSeo.stock_quantity || 0) > 0 ? 'স্টকে আছে' : 'স্টক শেষ') + '</p><p>পণ্যের নাম: ' +
         htmlEscape(productForSeo.name_bn || '') + (productForSeo.name_en ? ' (' + htmlEscape(productForSeo.name_en) + ')' : '') +
         (productForSeo.size || productForSeo.unit ? ' · পরিমাণ: ' + htmlEscape(productForSeo.size || productForSeo.unit) : '') + '</p>'
