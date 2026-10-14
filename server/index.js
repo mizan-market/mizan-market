@@ -223,6 +223,7 @@ app.get('/sitemap.xml', async (_req, res) => {
         .from('products')
         .select('slug,updated_at,created_at')
         .eq('available', true)
+        .eq('is_active', true)
         .not('slug', 'is', null)
         .limit(5000);
 
@@ -302,7 +303,7 @@ app.use(async (req, res, next) => {
         const sb = clientFor();
         const { data, error } = await sb
           .from('products')
-          .select('id,name_bn,name_en,sku,short_description,description,available,selling_price,discount_price,stock_quantity,unit,size')
+          .select('id,name_bn,name_en,sku,brand,short_description,description,available,selling_price,discount_price,stock_quantity,unit,size')
           .eq('slug', slug)
           .maybeSingle();
         if (error) throw error;
@@ -342,6 +343,7 @@ app.use(async (req, res, next) => {
         .from('products')
         .select('slug,name_bn,name_en,selling_price,discount_price,short_description,stock_quantity,unit,size,available')
         .eq('available', true)
+        .eq('is_active', true)
         .not('slug', 'is', null)
         .limit(24);
       if (error) throw error;
@@ -389,7 +391,17 @@ app.use(async (req, res, next) => {
       inLanguage: 'bn-BD',
       isPartOf: { '@type': 'WebSite', name: 'MIZAN MARKET', url: 'https://mizan-market.onrender.com/' }
     };
-    const schemaTag = '<script type="application/ld+json">' + JSON.stringify(pageSchema).replace(/</g, '\\u003c') + '</script>';
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'হোম', item: 'https://mizan-market.onrender.com/' },
+        ...(productForSeo ? [{ '@type': 'ListItem', position: 2, name: 'পণ্যসমূহ', item: 'https://mizan-market.onrender.com/products' }] : []),
+        { '@type': 'ListItem', position: productForSeo ? 3 : 2, name: productForSeo ? (productForSeo.name_bn || 'পণ্য') : meta.title, item: canonical }
+      ]
+    };
+    const schemaTag = '<script type="application/ld+json">' + JSON.stringify(pageSchema).replace(/</g, '\\u003c') + '</script>' +
+      '<script type="application/ld+json">' + JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') + '</script>';
     const fallbackLinks = [
       ['পণ্যসমূহ', '/products'],
       ['ক্যাটাগরি', '/categories'],
@@ -441,8 +453,13 @@ app.use(async (req, res, next) => {
             '</li>';
         }).join('') + '</ul></section>'
       : '';
+    const productAdvice = productForSeo?.name_bn?.includes('কুমড়ো বড়ি') || productForSeo?.name_bn?.includes('কুমড়ো বড়ি')
+      ? '<h2>কুমড়ো বড়ি কীভাবে ব্যবহার করবেন</h2><p>কুমড়ো বড়ি সাধারণত তরকারি বা মাছের ঝোলে ব্যবহার করা হয়। রান্নার ধরন অনুযায়ী বড়িগুলো আগে হালকা ভেজে নিয়ে ঝোলে দিলে স্বাদ ও গঠন ভালো থাকে। প্যাকেট খোলার পর আর্দ্রতা থেকে দূরে, পরিষ্কার ও শুকনো বায়ুরোধী পাত্রে রাখুন।</p>'
+      : productForSeo?.name_bn?.includes('সরিষার তেল')
+        ? '<h2>সরিষার তেল সংরক্ষণ ও ব্যবহার</h2><p>রান্নার প্রয়োজন অনুযায়ী তেল ব্যবহার করুন। বোতলের ঢাকনা ব্যবহারের পর ভালোভাবে বন্ধ করে সরাসরি রোদ, অতিরিক্ত তাপ ও পানি থেকে দূরে রাখুন। কেনার আগে বোতলের পরিমাণ, সিল, লেবেল এবং বর্তমান মূল্য যাচাই করুন।</p>'
+        : '';
     const productHelpfulContent = productForSeo
-      ? '<section aria-label="কেনার আগে পণ্যের তথ্য"><h2>কেনার আগে যে তথ্যগুলো যাচাই করবেন</h2><p>অর্ডার করার আগে পণ্যের বর্তমান মূল্য, প্যাকেটের পরিমাণ বা একক, স্টকের অবস্থা এবং পণ্যের বিবরণ মিলিয়ে নিন। এখানে দেখানো মূল্য ও স্টক পরিবর্তিত হতে পারে; অর্ডারের সময় চেকআউটে প্রদর্শিত হিসাব দেখে নিশ্চিত হোন।</p><h2>ডেলিভারি ও অর্ডার</h2><p>ডেলিভারি চার্জ আপনার নির্বাচিত এলাকার ওপর নির্ভর করতে পারে। অর্ডার দেওয়ার আগে ঠিকানা, ফোন নম্বর, পণ্যের পরিমাণ এবং মোট মূল্য যাচাই করুন।</p><p><a href="/delivery">ডেলিভারি তথ্য</a> · <a href="/pricing">দাম নির্ধারণের নীতি</a> · <a href="/faq">সাধারণ প্রশ্নোত্তর</a></p></section>'
+      ? '<section aria-label="পণ্যের ব্যবহার ও কেনার তথ্য">' + productAdvice + '<h2>কেনার আগে যে তথ্যগুলো যাচাই করবেন</h2><p>অর্ডার করার আগে পণ্যের নাম, প্যাকেটের পরিমাণ বা একক, বর্তমান মূল্য, স্টকের অবস্থা এবং পণ্যের বিবরণ মিলিয়ে নিন। এখানে দেখানো মূল্য ও স্টক পরিবর্তিত হতে পারে; অর্ডারের সময় চেকআউটে প্রদর্শিত হিসাব দেখে নিশ্চিত হোন।</p><h2>ডেলিভারি ও অর্ডার</h2><p>ডেলিভারি চার্জ আপনার নির্বাচিত এলাকার ওপর নির্ভর করতে পারে। অর্ডার দেওয়ার আগে ঠিকানা, ফোন নম্বর, পণ্যের পরিমাণ এবং মোট মূল্য যাচাই করুন।</p><p><a href="/products">আরও পণ্য দেখুন</a> · <a href="/delivery">ডেলিভারি তথ্য</a> · <a href="/faq">সাধারণ প্রশ্নোত্তর</a></p></section>'
       : '';
     const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p>' + productDetails + productHelpfulContent + productList + '<nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
     html = html.replace('</head>', schemaTag + '\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
