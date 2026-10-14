@@ -441,7 +441,10 @@ app.use(async (req, res, next) => {
             '</li>';
         }).join('') + '</ul></section>'
       : '';
-    const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p>' + productDetails + productList + '<nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
+    const productHelpfulContent = productForSeo
+      ? '<section aria-label="কেনার আগে পণ্যের তথ্য"><h2>কেনার আগে যে তথ্যগুলো যাচাই করবেন</h2><p>অর্ডার করার আগে পণ্যের বর্তমান মূল্য, প্যাকেটের পরিমাণ বা একক, স্টকের অবস্থা এবং পণ্যের বিবরণ মিলিয়ে নিন। এখানে দেখানো মূল্য ও স্টক পরিবর্তিত হতে পারে; অর্ডারের সময় চেকআউটে প্রদর্শিত হিসাব দেখে নিশ্চিত হোন।</p><h2>ডেলিভারি ও অর্ডার</h2><p>ডেলিভারি চার্জ আপনার নির্বাচিত এলাকার ওপর নির্ভর করতে পারে। অর্ডার দেওয়ার আগে ঠিকানা, ফোন নম্বর, পণ্যের পরিমাণ এবং মোট মূল্য যাচাই করুন।</p><p><a href="/delivery">ডেলিভারি তথ্য</a> · <a href="/pricing">দাম নির্ধারণের নীতি</a> · <a href="/faq">সাধারণ প্রশ্নোত্তর</a></p></section>'
+      : '';
+    const fallbackContent = '<main class="seo-fallback"><h1>' + htmlEscape(meta.title) + '</h1><h2>' + htmlEscape(copy[0]) + '</h2><p>' + htmlEscape(copy[1]) + '</p>' + productDetails + productHelpfulContent + productList + '<nav aria-label="প্রধান পৃষ্ঠা">' + fallbackLinks + '</nav><p><a href="/">MIZAN MARKET-এর হোমপেজ</a> — ন্যায্য দামে, সবার জন্য।</p></main>';
     html = html.replace('</head>', schemaTag + '\n<link rel="canonical" href="' + htmlEscape(canonical) + '" />\n  </head>');
     html = html.replace('<div id="root"></div>', '<div id="root">' + fallbackContent + '</div>');
     return res.status(200).type('html').send(html);
